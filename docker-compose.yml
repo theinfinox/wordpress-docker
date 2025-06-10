@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  mariadb1:
+    image: bitnami/mariadb:latest
+    container_name: mariadb1
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MARIADB_USER=bn_wordpress
+      - MARIADB_PASSWORD=bitnami
+      - MARIADB_DATABASE=bitnami_wordpress1
+    networks:
+      - wordpress-network1
+    volumes:
+      - mariadb_data1:/bitnami/mariadb
+    restart: unless-stopped
+
+  wordpress1:
+    image: bitnami/wordpress:latest
+    container_name: wordpress1
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - WORDPRESS_DATABASE_HOST=mariadb1
+      - WORDPRESS_DATABASE_PORT_NUMBER=3306
+      - WORDPRESS_DATABASE_USER=bn_wordpress
+      - WORDPRESS_DATABASE_PASSWORD=bitnami
+      - WORDPRESS_DATABASE_NAME=bitnami_wordpress1
+    ports:
+      - "8081:8080"
+      - "8443:8443"
+    networks:
+      - wordpress-network1
+    volumes:
+      - wordpress_data1:/bitnami/wordpress
+    restart: unless-stopped
+
+  # --- Uncomment below to enable a second independent WordPress site ---
+
+  # mariadb2:
+  #   image: bitnami/mariadb:latest
+  #   container_name: mariadb2
+  #   environment:
+  #     - ALLOW_EMPTY_PASSWORD=yes
+  #     - MARIADB_USER=bn_wordpress
+  #     - MARIADB_PASSWORD=bitnami
+  #     - MARIADB_DATABASE=bitnami_wordpress2
+  #   networks:
+  #     - wordpress-network2
+  #   volumes:
+  #     - mariadb_data2:/bitnami/mariadb
+  #   restart: unless-stopped
+
+  # wordpress2:
+  #   image: bitnami/wordpress:latest
+  #   container_name: wordpress2
+  #   environment:
+  #     - ALLOW_EMPTY_PASSWORD=yes
+  #     - WORDPRESS_DATABASE_HOST=mariadb2
+  #     - WORDPRESS_DATABASE_PORT_NUMBER=3306
+  #     - WORDPRESS_DATABASE_USER=bn_wordpress
+  #     - WORDPRESS_DATABASE_PASSWORD=bitnami
+  #     - WORDPRESS_DATABASE_NAME=bitnami_wordpress2
+  #   ports:
+  #     - "8082:8080"
+  #     - "8444:8443"
+  #   networks:
+  #     - wordpress-network2
+  #   volumes:
+  #     - wordpress_data2:/bitnami/wordpress
+  #   restart: unless-stopped
+
+networks:
+  wordpress-network1:
+  # wordpress-network2:
+
+volumes:
+  wordpress_data1:
+  mariadb_data1:
+  # wordpress_data2:
+  # mariadb_data2:
