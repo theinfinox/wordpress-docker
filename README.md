@@ -62,6 +62,9 @@ docker run -d --name wordpress1 \
   Username: `user`  
   Password: `bitnami`
 
+
+![image](https://github.com/user-attachments/assets/7ebad477-88f2-40f2-aeab-099cf5fd42ee)
+
 ---
 
 ## Hosting Multiple WordPress Sites
