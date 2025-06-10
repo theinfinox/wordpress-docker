@@ -61,9 +61,68 @@ docker run -d --name wordpress1 \
 - **Default login:**  
   Username: `user`  
   Password: `bitnami`
-
+  
+NB: Default password are meant to be changed on first login itself.  User can also be changed. Just remember the needful. 
 
 ![image](https://github.com/user-attachments/assets/7ebad477-88f2-40f2-aeab-099cf5fd42ee)
+
+
+---
+
+## Exposing Your WordPress Site to the Internet
+
+To make your WordPress site accessible from outside your local network, follow these steps and tips:
+
+### 1. Check and Configure Your Firewall
+
+- **Linux Servers:**  
+  If you are using `ufw` (Uncomplicated Firewall), check the status and allow the required ports:
+  ```bash
+  sudo ufw status
+  sudo ufw allow 8081/tcp   # Example for WordPress site 1
+  sudo ufw allow 8443/tcp   # Example for HTTPS port
+  ```
+
+> ⚠️ **Warning:**
+> Leave ufw as it is if inactive, if activating Do understnd that:
+> Before editing your firewall settings (such as `ufw`), be extremely careful!  
+> If you accidentally block or remove rules for SSH (`port 22`), you may lose remote access to your server.  
+> Always ensure you have a rule allowing SSH (e.g., `sudo ufw allow 22/tcp`) before making other changes.  
+> If possible, have console or physical access to your server as a backup.
+
+Later
+  Replace the port numbers as needed for your setup.
+
+- **Other Firewall Tools:**  
+  Use your system's firewall management tool to allow incoming connections on the relevant ports.
+
+### 2. Map Ports to Your Domain
+
+- Once your server is accessible on the desired ports, you can point your domain to your server's **static IP** using DNS A records.
+- In your domain registrar's DNS settings, set an A record to your server's public IP.
+
+### 3. Dynamic DNS (DDNS) and Cloudflare Zero Trust
+
+- **If your server does not have a static IP:**  
+  Use a Dynamic DNS (DDNS) service to automatically update your domain with your changing public IP.
+- **Cloudflare Zero Trust:**  
+  Use Cloudflare's Zero Trust platform to securely expose your site even without a static IP.
+
+### 4. Bonus Tips for Student and Budding Developers
+
+- **DDNS for Home Servers:**  
+  DDNS services allow you to run a web server from home using a Raspberry Pi, an old laptop, or even your main computer. Your site remains accessible even if your IP address changes.
+- **Try ngrok:**  
+  [ngrok](https://ngrok.com/) lets you expose your local development server to the internet with a public URL—great for testing, demos, or temporary sharing.
+
+---
+
+> **Summary:**  
+> - Open required ports in your firewall (e.g., 8081 for WordPress HTTP).
+> - Point your domain to your server using DNS.
+> - Use DDNS or tools like Cloudflare Zero Trust if you do not have a static IP.
+> - Try ngrok for quick, secure public exposure of local sites.
+
 
 ---
 
@@ -167,6 +226,74 @@ This will set up three separate WordPress instances with their own databases usi
 
 
 Adjust ports (`8081`, `8082`, etc.) and database names for each instance.
+
+---
+
+## Accessing Your WordPress and Database Containers
+
+Once your containers are running, you can access and interact with your WordPress sites and MariaDB databases as follows:
+
+### Accessing WordPress Sites
+
+Each WordPress container is mapped to a unique port on your host machine.  
+Open your web browser and go to the following addresses:
+
+- **Site 1:** [http://localhost:8081](http://localhost:8081)
+- **Site 2:** [http://localhost:8082](http://localhost:8082) *(if enabled)*
+- **Site 3:** [http://localhost:8083](http://localhost:8083) *(if enabled)*
+
+> **Note:** If you are running Docker on a remote server, replace `localhost` with your server's IP address.
+
+### Accessing the WordPress Admin Dashboard
+
+For each site:
+- Go to `http://localhost:PORT/wp-admin`  
+  (e.g., [http://localhost:8081/wp-admin](http://localhost:8081/wp-admin))
+- Default credentials:  
+  **Username:** `user`  
+  **Password:** `bitnami`
+
+> **Tip:** Change your password after logging in for the first time, especially in production environments.
+
+### Accessing MariaDB Databases
+
+You can connect to the MariaDB containers directly using tools like [MySQL Workbench](https://www.mysql.com/products/workbench/), [DBeaver](https://dbeaver.io/), or the MySQL CLI.
+
+#### Example: Access MariaDB via the CLI
+
+To open a shell in the MariaDB container (e.g., for Site 1):
+```bash
+docker exec -it mariadb1 mysql -u bn_wordpress -pbitnami bitnami_wordpress1
+```
+- **Username:** `bn_wordpress`
+- **Password:** `bitnami`
+- **Database:** `bitnami_wordpress1` *(or `bitnami_wordpress2`, etc.)*
+
+> **Note:** For external access (from outside the Docker host), you would need to expose the database port (3306) in your `docker run` or `docker-compose.yml` file. By default, the database is only accessible by the WordPress container in its Docker network for security.
+
+### Accessing Container Shells
+
+You can get a shell inside any container for troubleshooting or advanced management:
+
+```bash
+docker exec -it wordpress1 bash     # For WordPress container shell
+docker exec -it mariadb1 bash       # For MariaDB container shell
+```
+
+---
+
+**Summary Table**
+
+| Site        | WordPress URL      | Admin URL                   | DB Container | DB Name               | DB User       |
+|-------------|-------------------|-----------------------------|--------------|-----------------------|---------------|
+| Site 1      | http://localhost:8081 | http://localhost:8081/wp-admin | mariadb1     | bitnami_wordpress1    | bn_wordpress  |
+| Site 2*     | http://localhost:8082 | http://localhost:8082/wp-admin | mariadb2     | bitnami_wordpress2    | bn_wordpress  |
+| Site 3*     | http://localhost:8083 | http://localhost:8083/wp-admin | mariadb3     | bitnami_wordpress3    | bn_wordpress  |
+
+\*If enabled in your configuration.
+
+
+
 
 ---
 
