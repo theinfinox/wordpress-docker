@@ -69,30 +69,100 @@ docker run -d --name wordpress1 \
 Repeat the steps above for each site, using unique networks, volumes, container names, and ports:  
 Below is an example for **three websites**:
 
+
+To set up multiple WordPress instances with separate databases using Docker, you'll need to modify the Docker commands to create additional containers for WordPress and MariaDB. Here's how you can set it up for three websites:
+
+1. Create Docker networks:
 ```bash
-# Create networks
 docker network create wordpress-network1
 docker network create wordpress-network2
 docker network create wordpress-network3
+```
 
-# Create volumes
+2. Create volumes for each WordPress instance and database:
+```bash
 docker volume create --name wordpress_data1
 docker volume create --name wordpress_data2
 docker volume create --name wordpress_data3
+
 docker volume create --name mariadb_data1
 docker volume create --name mariadb_data2
 docker volume create --name mariadb_data3
-
-# MariaDB containers
-docker run -d --name mariadb1 ...
-docker run -d --name mariadb2 ...
-docker run -d --name mariadb3 ...
-
-# WordPress containers
-docker run -d --name wordpress1 ...
-docker run -d --name wordpress2 ...
-docker run -d --name wordpress3 ...
 ```
+
+3. Run MariaDB containers for each WordPress instance:
+```bash
+docker run -d --name mariadb1 \
+  --env ALLOW_EMPTY_PASSWORD=yes \
+  --env MARIADB_USER=bn_wordpress \
+  --env MARIADB_PASSWORD=bitnami \
+  --env MARIADB_DATABASE=bitnami_wordpress1 \
+  --network wordpress-network1 \
+  --volume mariadb_data1:/bitnami/mariadb \
+  bitnami/mariadb:latest
+
+docker run -d --name mariadb2 \
+  --env ALLOW_EMPTY_PASSWORD=yes \
+  --env MARIADB_USER=bn_wordpress \
+  --env MARIADB_PASSWORD=bitnami \
+  --env MARIADB_DATABASE=bitnami_wordpress2 \
+  --network wordpress-network2 \
+  --volume mariadb_data2:/bitnami/mariadb \
+  bitnami/mariadb:latest
+
+docker run -d --name mariadb3 \
+  --env ALLOW_EMPTY_PASSWORD=yes \
+  --env MARIADB_USER=bn_wordpress \
+  --env MARIADB_PASSWORD=bitnami \
+  --env MARIADB_DATABASE=bitnami_wordpress3 \
+  --network wordpress-network3 \
+  --volume mariadb_data3:/bitnami/mariadb \
+  bitnami/mariadb:latest
+```
+
+4. Run WordPress containers for each WordPress instance:
+```bash
+docker run -d --name wordpress1 \
+  -p 8081:8080 -p 8443:8443 \
+  --env ALLOW_EMPTY_PASSWORD=yes \
+  --env WORDPRESS_DATABASE_HOST=mariadb1 \
+  --env WORDPRESS_DATABASE_PORT_NUMBER=3306 \
+  --env WORDPRESS_DATABASE_USER=bn_wordpress \
+  --env WORDPRESS_DATABASE_PASSWORD=bitnami \
+  --env WORDPRESS_DATABASE_NAME=bitnami_wordpress1 \
+  --network wordpress-network1 \
+  --volume wordpress_data1:/bitnami/wordpress \
+  bitnami/wordpress:latest
+
+docker run -d --name wordpress2 \
+  -p 8082:8080 -p 8444:8443 \
+  --env ALLOW_EMPTY_PASSWORD=yes \
+  --env WORDPRESS_DATABASE_HOST=mariadb2 \
+  --env WORDPRESS_DATABASE_PORT_NUMBER=3306 \
+  --env WORDPRESS_DATABASE_USER=bn_wordpress \
+  --env WORDPRESS_DATABASE_PASSWORD=bitnami \
+  --env WORDPRESS_DATABASE_NAME=bitnami_wordpress2 \
+  --network wordpress-network2 \
+  --volume wordpress_data2:/bitnami/wordpress \
+  bitnami/wordpress:latest
+
+docker run -d --name wordpress3 \
+  -p 8083:8080 -p 8445:8443 \
+  --env ALLOW_EMPTY_PASSWORD=yes \
+  --env WORDPRESS_DATABASE_HOST=mariadb3 \
+  --env WORDPRESS_DATABASE_PORT_NUMBER=3306 \
+  --env WORDPRESS_DATABASE_USER=bn_wordpress \
+  --env WORDPRESS_DATABASE_PASSWORD=bitnami \
+  --env WORDPRESS_DATABASE_NAME=bitnami_wordpress3 \
+  --network wordpress-network3 \
+  --volume wordpress_data3:/bitnami/wordpress \
+  bitnami/wordpress:latest
+```
+
+This will set up three separate WordPress instances with their own databases using Docker containers. Adjust port numbers and environment variables as needed for your setup.
+
+
+
 Adjust ports (`8081`, `8082`, etc.) and database names for each instance.
 
 ---
