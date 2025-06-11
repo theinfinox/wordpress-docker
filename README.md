@@ -16,7 +16,7 @@ This repository provides clear instructions for running isolated WordPress sites
 
 ---
 
-## Quick Start Example: One WordPress Site
+## Quick Start Example: One WordPress Site (Linux - Bash)
 
 **1. Create a Docker network**  
 ```bash
@@ -66,10 +66,65 @@ NB: Default password are meant to be changed on first login itself.  User can al
 
 ![image](https://github.com/user-attachments/assets/7ebad477-88f2-40f2-aeab-099cf5fd42ee)
 
+---
+
+
+## Quick Start Example: One WordPress Site (Windows - PowerShell)
+
+**1. Create a Docker network**
+
+```powershell
+docker network create wordpress-network1
+```
+
+**2. Create persistent volumes**
+
+```powershell
+docker volume create --name wordpress_data1
+docker volume create --name mariadb_data1
+```
+
+**3. Start the MariaDB container**
+
+```powershell
+docker run -d --name mariadb1 `
+--env ALLOW_EMPTY_PASSWORD=yes `
+--env MARIADB_USER=bn_wordpress `
+--env MARIADB_PASSWORD=bitnami `
+--env MARIADB_DATABASE=bitnami_wordpress1 `
+--network wordpress-network1 `
+--restart unless-stopped `
+--volume mariadb_data1:/bitnami/mariadb `
+bitnami/mariadb:latest
+```
+
+**4. Start the WordPress container**
+
+```powershell
+docker run -d --name wordpress1 `
+-p 8081:8080 -p 8443:8443 `
+--env ALLOW_EMPTY_PASSWORD=yes `
+--env WORDPRESS_DATABASE_HOST=mariadb1 `
+--env WORDPRESS_DATABASE_PORT_NUMBER=3306 `
+--env WORDPRESS_DATABASE_USER=bn_wordpress `
+--env WORDPRESS_DATABASE_PASSWORD=bitnami `
+--env WORDPRESS_DATABASE_NAME=bitnami_wordpress1 `
+--network wordpress-network1 `
+--restart unless-stopped `
+--volume wordpress_data1:/bitnami/wordpress `
+bitnami/wordpress:latest
+```
+
+* **Default login:**
+  Username: `user`
+  Password: `bitnami`
+
+
+
 
 ---
 
-## Exposing Your WordPress Site to the Internet
+## Exposing Your WordPress Site to the Internet (Linux)
 
 To make your WordPress site accessible from outside your local network, follow these steps and tips:
 
